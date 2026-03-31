@@ -185,9 +185,61 @@
             padding: 12px 16px;
             text-align: center;
             font-size: 13px;
+            position: sticky;
+            top: 60px;
+            z-index: 99;
         }
 
         .install-banner a { color: #92400E; font-weight: 600; }
+
+        .install-btn-fixed {
+            position: fixed;
+            bottom: 80px;
+            right: 16px;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .install-steps {
+            background: #EFF6FF;
+            border: 2px solid #3B82F6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .install-steps h4 {
+            color: #1E40AF;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .install-steps ol {
+            color: #1E293B;
+            font-size: 13px;
+            padding-left: 20px;
+        }
+
+        .install-steps li {
+            margin-bottom: 6px;
+        }
 
         iframe {
             width: 100%;
@@ -201,6 +253,11 @@
     <div id="installBanner" class="install-banner hidden">
         📲 Install this app: <a href="#" id="installBtn">Add to Home Screen</a>
     </div>
+
+    <!-- Floating Install Button -->
+    <button id="floatingInstallBtn" class="install-btn-fixed hidden" onclick="showInstallInstructions()">
+        📲 Install App
+    </button>
 
     <div class="header">
         <h1>🤖 NetBond Agent</h1>
@@ -287,8 +344,20 @@
                     <p>Analyzing with Claude AI...</p>
                 </div>
                 <div id="analysisContent" class="analysis-content hidden"></div>
+                <div class="install-steps" id="installSteps" style="display: none;">
+                    <h4>📲 Install This App</h4>
+                    <ol>
+                        <li>Tap <b>Menu (⋮)</b> in Chrome</li>
+                        <li>Tap <b>"Install App"</b> or <b>"Add to Home Screen"</b></li>
+                        <li>Tap <b>"Install"</b> or <b>"Add"</b></li>
+                        <li>Find <b>NetBond Agent</b> icon on your home screen!</li>
+                    </ol>
+                </div>
                 <button class="btn btn-secondary" onclick="copyAnalysis()" style="margin-top: 12px;">
                     📋 Copy Analysis
+                </button>
+                <button class="btn btn-primary" onclick="showInstallInstructions()" style="margin-top: 8px;">
+                    📲 Install App
                 </button>
             </div>
         </div>
@@ -478,18 +547,39 @@ Provide:
                 e.preventDefault();
                 deferredPrompt = e;
                 document.getElementById('installBanner').classList.remove('hidden');
+                document.getElementById('floatingInstallBtn').classList.remove('hidden');
             });
 
-            document.getElementById('installBtn').addEventListener('click', () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then(() => {
-                        document.getElementById('installBanner').classList.add('hidden');
-                    });
-                } else {
-                    showToast('Follow browser instructions to install');
-                }
+            document.getElementById('installBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                showInstallInstructions();
             });
+
+            // Show floating button after 5 seconds
+            setTimeout(() => {
+                const floatingBtn = document.getElementById('floatingInstallBtn');
+                if (floatingBtn && !floatingBtn.classList.contains('hidden')) {
+                    floatingBtn.classList.remove('hidden');
+                }
+            }, 5000);
+        }
+
+        function showInstallInstructions() {
+            const steps = document.getElementById('installSteps');
+            if (steps) {
+                steps.style.display = 'block';
+                steps.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    document.getElementById('installBanner').classList.add('hidden');
+                    document.getElementById('floatingInstallBtn').classList.add('hidden');
+                });
+            } else {
+                showToast('Tap Menu (⋮) → Install App');
+            }
         }
     </script>
 </body>
